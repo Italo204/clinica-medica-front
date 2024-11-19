@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Médica - Funcionários e Especialidades</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header class="text-center">
+        <h1>Clínica Médica</h1>
+        <nav>
+            <ul class="nav nav-pills">
+                <li class="active"><a href="#funcionarios" data-toggle="tab">Funcionários</a></li>
+                <li><a href="#especialidades" data-toggle="tab">Especialidades</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="tab-content">
+            <section id="funcionarios" class="tab-pane fade in active">
+                <h2>Funcionários</h2>
+                <form id="form-funcionario" class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Nome" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Cargo" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar Funcionário</button>
+                </form>
+                <ul id="lista-funcionarios" class="list-group"></ul>
+            </section>
+
+            <section id="especialidades" class="tab-pane fade">
+                <h2>Especialidades</h2>
+                <form id="form-especialidade" class="form-inline">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Nome da Especialidade" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Adicionar Especialidade</button>
+                </form>
+                <ul id="lista-especialidades" class="list-group"></ul>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const urlFuncionario = 'http://localhost:8080/funcionarios';
+        const urlEspecialidade = 'http://localhost:8080/especialidade';
+
+        async function criarEspecialidade(especialidade) {
+            try {
+                const response = await axios.post(urlEspecialidade, especialidade);
+                console.log('Especialidade criada:', response.data);
+            } catch (error) {
+                throw new Error('Erro ao criar especialidade');
+            }
+        }
+
+        async function getAllEspecialidades() {
+            try {
+                const response = await axios.get(urlEspecialidade);
+                return response.data;
+            } catch (error) {
+                throw new Error('Erro ao obter especialidades');
+            }
+        }
+
+        async function criarFuncionario(funcionario) {
+            try {
+                const response = await axios.post(urlFuncionario, funcionario);
+                console.log('Funcionário criado:', response.data);
+            } catch (error) {
+                throw new Error('Erro ao criar funcionário');
+            }
+        }
+
+        async function getAllFuncionarios() {
+            try {
+                const response = await axios.get(urlFuncionario);
+                return response.data;
+            } catch (error) {
+                throw new Error('Erro ao obter funcionários');
+            }
+        }
+
+        document.getElementById('form-funcionario').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const nome = event.target[0].value;
+            const cargo = event.target[1].value;
+            const novoFuncionario = { nome, cargo };
+
+            try {
+                await criarFuncionario(novoFuncionario);
+                event.target.reset();
+                await atualizarListaFuncionarios();
+            } catch (error) {
+                alert ("Não foi possível criar o funcionário. Tente novamente."); // Mensagem de erro para o usuário
+            }
+        });
+
+        document.getElementById('form-especialidade').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const nome = event.target[0].value;
+            const novaEspecialidade = { nome };
+
+            try {
+                await criarEspecialidade(novaEspecialidade);
+                event.target.reset();
+                await atualizarListaEspecialidades();
+            } catch (error) {
+                alert("Não foi possível criar a especialidade. Tente novamente."); // Mensagem de erro para o usuário
+            }
+        });
+
+        async function atualizarListaFuncionarios() {
+            try {
+                const funcionarios = await getAllFuncionarios();
+                const listaFuncionarios = document.getElementById('lista-funcionarios');
+                listaFuncionarios.innerHTML = '';
+                funcionarios.forEach(funcionario => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = `${funcionario.nome} - ${funcionario.cargo}`;
+                    listaFuncionarios.appendChild(li);
+                });
+            } catch (error) {
+                // Não exibir mensagem de erro aqui
+            }
+        }
+
+        async function atualizarListaEspecialidades() {
+            try {
+                const especialidades = await getAllEspecialidades();
+                const listaEspecialidades = document.getElementById('lista-especialidades');
+                listaEspecialidades.innerHTML = '';
+                especialidades.forEach(especialidade => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = especialidade.nome;
+                    listaEspecialidades.appendChild(li);
+                });
+            } catch (error) {
+                // Não exibir mensagem de erro aqui
+            }
+        }
+
+        // Chama as funções de listagem ao carregar a página
+        atualizarListaFuncionarios();
+        atualizarListaEspecialidades();
+    </script>
+</body>
+</html>
